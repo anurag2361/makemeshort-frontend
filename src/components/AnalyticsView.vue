@@ -188,7 +188,11 @@ export default defineComponent({
       if (!timestamp) return 'N/A'
 
       const date = new Date(timestamp)
-      return date.toLocaleString()
+      return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
     },
 
     getShortUrl() {
@@ -412,6 +416,12 @@ export default defineComponent({
           color: #4a90e2;
           line-height: 1.2;
           margin-bottom: 10px;
+          word-break: break-word;
+          font-size: 2rem;
+          min-height: 5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .metric-label {

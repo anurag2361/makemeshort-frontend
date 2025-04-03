@@ -9,6 +9,7 @@
       <div class="nav-links">
         <router-link to="/shorten">Shorten</router-link>
         <router-link to="/urls">My URLs</router-link>
+        <router-link to="/qr-generator">Create QR</router-link>
       </div>
     </nav>
   </header>

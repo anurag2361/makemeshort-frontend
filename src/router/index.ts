@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import ShortenView from '../components/ShortenView.vue'
 import UrlsView from '../components/UrlsView.vue'
 import AnalyticsView from '../components/AnalyticsView.vue'
+import QrGeneratorView from '@/components/QrGeneratorView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +26,11 @@ const router = createRouter({
       path: '/analytics/:code?',
       name: 'analytics',
       component: AnalyticsView,
+    },
+    {
+      path: '/qr-generator',
+      name: 'qr-generator',
+      component: QrGeneratorView,
     },
   ],
 })
