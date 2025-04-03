@@ -16,7 +16,30 @@ const apiClient = axios.create({
   timeout: 10000,
 })
 
+// Add a request interceptor to add the token to all requests
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error),
+)
+
 export default {
+  setAuthToken(token: string) {
+    apiClient.defaults.headers.common.Authorization = `Bearer ${token}`
+  },
+
+  clearAuthToken() {
+    delete apiClient.defaults.headers.common.Authorization
+  },
+
+  login(credentials: { username: string; password: string }) {
+    return apiClient.post('/auth/login', credentials)
+  },
   shortenUrl(payload: ShortenUrlRequest): Promise<AxiosResponse<ShortenUrlResponse>> {
     return apiClient.post('/shorten', payload)
   },

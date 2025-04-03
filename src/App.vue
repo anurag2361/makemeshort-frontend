@@ -1,6 +1,6 @@
 <!-- filepath: src/App.vue -->
 <template>
-  <header>
+  <header v-if="isAuthenticated">
     <nav class="navbar">
       <div class="logo">
         <router-link to="/"> MakeMeShort </router-link>
@@ -9,19 +9,45 @@
       <div class="nav-links">
         <router-link to="/shorten">Shorten</router-link>
         <router-link to="/urls">My URLs</router-link>
-        <router-link to="/qr-generator">Create QR</router-link>
+        <!-- Only show these links for Super Users -->
+        <router-link v-if="isSuperUser" to="/qr-generator">Create QR</router-link>
+        <a href="#" @click.prevent="logout" class="logout-link">Logout</a>
       </div>
     </nav>
   </header>
 
   <router-view />
 
-  <footer>
+  <footer v-if="isAuthenticated">
     <div class="footer-content">
       <p>© {{ new Date().getFullYear() }} MakeMeShort. All rights reserved.</p>
     </div>
   </footer>
 </template>
+
+<script lang="ts">
+import { defineComponent, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
+export default defineComponent({
+  setup() {
+    const authStore = useAuthStore()
+
+    const isAuthenticated = computed(() => authStore.isAuthenticated)
+    const isSuperUser = computed(() => authStore.isSuperUser)
+
+    const logout = () => {
+      authStore.logout()
+    }
+
+    return {
+      isAuthenticated,
+      isSuperUser,
+      logout,
+    }
+  },
+})
+</script>
 
 <style>
 /* Global styles */
@@ -141,5 +167,13 @@ footer {
     width: 100%;
     justify-content: center;
   }
+}
+
+.logout-link {
+  color: var(--danger) !important;
+}
+
+.logout-link:hover {
+  background-color: rgba(211, 47, 47, 0.1) !important;
 }
 </style>
