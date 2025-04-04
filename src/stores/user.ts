@@ -87,26 +87,26 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async toggleUserStatus(userId: string, activate: boolean) {
-      this.isLoading = true
-      this.error = null
+    // async toggleUserStatus(userId: string, activate: boolean) {
+    //   this.isLoading = true
+    //   this.error = null
 
-      try {
-        if (activate) {
-          await api.activateUser(userId)
-        } else {
-          await api.deactivateUser(userId)
-        }
-        // Refresh the user list
-        await this.fetchUsers()
-      } catch (err: any) {
-        this.error =
-          err.response?.data?.error || `Failed to ${activate ? 'activate' : 'deactivate'} user`
-        console.error(`Error ${activate ? 'activating' : 'deactivating'} user:`, err)
-        throw err
-      } finally {
-        this.isLoading = false
-      }
-    },
+    //   try {
+    //     if (activate) {
+    //       await api.activateUser(userId)
+    //     } else {
+    //       await api.deactivateUser(userId)
+    //     }
+    //     // Refresh the user list
+    //     await this.fetchUsers()
+    //   } catch (err: any) {
+    //     this.error =
+    //       err.response?.data?.error || `Failed to ${activate ? 'activate' : 'deactivate'} user`
+    //     console.error(`Error ${activate ? 'activating' : 'deactivating'} user:`, err)
+    //     throw err
+    //   } finally {
+    //     this.isLoading = false
+    //   }
+    // },
   },
 })

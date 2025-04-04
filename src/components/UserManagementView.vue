@@ -64,7 +64,7 @@
                 <button @click="() => editUser(user)" class="action-button edit-button">
                   Edit
                 </button>
-                <button
+                <!-- <button
                   v-if="user.is_active"
                   @click="() => toggleUserStatus(user.id, false)"
                   class="action-button deactivate-button"
@@ -77,7 +77,7 @@
                   class="action-button activate-button"
                 >
                   Activate
-                </button>
+                </button> -->
                 <button
                   v-if="user.username !== 'admin'"
                   @click="() => confirmDeleteUser(user)"
@@ -393,6 +393,7 @@ export default defineComponent({
           roles: userForm.value.roles,
         })
         closeModals()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         formError.value = err.message || 'Failed to create user'
       } finally {
@@ -412,6 +413,7 @@ export default defineComponent({
       formError.value = ''
 
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const userData: any = {
           roles: userForm.value.roles,
         }
@@ -426,6 +428,7 @@ export default defineComponent({
 
         await userStore.updateUser(userToEdit.value.id, userData)
         closeModals()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         formError.value = err.message || 'Failed to update user'
       } finally {
@@ -454,13 +457,13 @@ export default defineComponent({
       }
     }
 
-    const toggleUserStatus = async (userId: string, activate: boolean) => {
-      try {
-        await userStore.toggleUserStatus(userId, activate)
-      } catch (err) {
-        console.error(`Error ${activate ? 'activating' : 'deactivating'} user:`, err)
-      }
-    }
+    // const toggleUserStatus = async (userId: string, activate: boolean) => {
+    //   try {
+    //     await userStore.toggleUserStatus(userId, activate)
+    //   } catch (err) {
+    //     console.error(`Error ${activate ? 'activating' : 'deactivating'} user:`, err)
+    //   }
+    // }
 
     return {
       users,
@@ -480,7 +483,7 @@ export default defineComponent({
       updateUser,
       confirmDeleteUser,
       deleteUser,
-      toggleUserStatus,
+      //toggleUserStatus,
     }
   },
 })

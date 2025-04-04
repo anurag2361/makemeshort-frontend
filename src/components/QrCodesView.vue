@@ -86,9 +86,9 @@
           <p>This action cannot be undone.</p>
           <div class="modal-actions">
             <button @click="cancelDelete" class="cancel-button">Cancel</button>
-            <button @click="deleteQrCode" class="confirm-delete-button" :disabled="isDeletingQr">
+            <!-- <button @click="deleteQrCode" class="confirm-delete-button" :disabled="isDeletingQr">
               {{ isDeletingQr ? 'Deleting...' : 'Delete QR Code' }}
-            </button>
+            </button> -->
           </div>
         </div>
       </div>
@@ -153,7 +153,7 @@ export default defineComponent({
       return text.substring(0, maxLength) + '...'
     }
 
-    const getQrImageUrl = (shortCode: string, type: QrTargetType, svgContent?: string): string => {
+    const getQrImageUrl = (shortCode: string, type: QrTargetType, svgContent: string): string => {
       return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgContent)}`
     }
 
@@ -167,20 +167,20 @@ export default defineComponent({
       qrToDelete.value = null
     }
 
-    const deleteQrCode = async () => {
-      if (!qrToDelete.value) return
+    // const deleteQrCode = async () => {
+    //   if (!qrToDelete.value) return
 
-      isDeletingQr.value = true
-      try {
-        await qrCodeStore.deleteQrCode(qrToDelete.value.id)
-        showDeleteModal.value = false
-      } catch (err) {
-        console.error('Error deleting QR code:', err)
-      } finally {
-        isDeletingQr.value = false
-        qrToDelete.value = null
-      }
-    }
+    //   isDeletingQr.value = true
+    //   try {
+    //     await qrCodeStore.deleteQrCode(qrToDelete.value.id)
+    //     showDeleteModal.value = false
+    //   } catch (err) {
+    //     console.error('Error deleting QR code:', err)
+    //   } finally {
+    //     isDeletingQr.value = false
+    //     qrToDelete.value = null
+    //   }
+    // }
 
     return {
       qrCodes,
@@ -195,7 +195,7 @@ export default defineComponent({
       getQrImageUrl,
       confirmDelete,
       cancelDelete,
-      deleteQrCode,
+      //deleteQrCode,
       debouncedSearch,
       searchQuery,
     }

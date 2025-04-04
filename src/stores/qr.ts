@@ -34,22 +34,22 @@ export const useQrCodeStore = defineStore('qrCode', {
       }
     },
 
-    async deleteQrCode(id: string) {
-      this.isLoading = true
-      this.error = null
+    // async deleteQrCode(id: string) {
+    //   this.isLoading = true
+    //   this.error = null
 
-      try {
-        await api.deleteQrCode(id)
-        // Refresh the QR code list
-        await this.fetchQrCodes()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        this.error = err.response?.data?.error || 'Failed to delete QR code'
-        console.error('Error deleting QR code:', err)
-        throw err
-      } finally {
-        this.isLoading = false
-      }
-    },
+    //   try {
+    //     await api.deleteQrCode(id)
+    //     // Refresh the QR code list
+    //     await this.fetchQrCodes()
+    //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //   } catch (err: any) {
+    //     this.error = err.response?.data?.error || 'Failed to delete QR code'
+    //     console.error('Error deleting QR code:', err)
+    //     throw err
+    //   } finally {
+    //     this.isLoading = false
+    //   }
+    // },
   },
 })

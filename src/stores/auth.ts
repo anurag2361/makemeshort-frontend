@@ -204,13 +204,13 @@ export const useAuthStore = defineStore('auth', {
         }
 
         // Store token in localStorage for persistence
-        localStorage.setItem('token', this.token)
+        localStorage.setItem('token', this.token as string)
 
         // Also store user data in localStorage for better persistence
         localStorage.setItem('user', JSON.stringify(this.user))
 
         // Set token for all future API requests
-        api.setAuthToken(this.token)
+        api.setAuthToken(this.token as string)
 
         return true
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

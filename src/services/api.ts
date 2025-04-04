@@ -8,6 +8,7 @@ import type {
   QrTargetType,
   User,
   CreateUserRequest,
+  QrCode,
 } from '@/types/api'
 
 const apiClient = axios.create({
