@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createRouter, createWebHistory } from 'vue-router'
 import ShortenView from '../components/ShortenView.vue'
 import UrlsView from '../components/UrlsView.vue'
@@ -5,6 +6,8 @@ import AnalyticsView from '../components/AnalyticsView.vue'
 import QrGeneratorView from '@/components/QrGeneratorView.vue'
 import LoginView from '@/components/LoginView.vue'
 import { useAuthStore } from '@/stores/auth'
+import UserManagementView from '@/components/UserManagementView.vue'
+import QrCodesView from '@/components/QrCodesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,37 +16,70 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: UrlsView,
-      meta: { requiresAuth: true, superUserOnly: false },
+      meta: {
+        requiresAuth: true,
+        permissions: ['viewUrl'],
+      },
     },
     {
       path: '/login',
       name: 'login',
       component: LoginView,
-      meta: { guest: true, superUserOnly: false },
+      meta: { guest: true },
     },
     {
       path: '/shorten',
       name: 'shorten',
       component: ShortenView,
-      meta: { requiresAuth: true, superUserOnly: false },
+      meta: {
+        requiresAuth: true,
+        permissions: ['createUrl'],
+      },
     },
     {
       path: '/urls',
       name: 'urls',
       component: UrlsView,
-      meta: { requiresAuth: true, superUserOnly: false },
+      meta: {
+        requiresAuth: true,
+        permissions: ['viewUrl'],
+      },
     },
     {
       path: '/analytics/:code?',
       name: 'analytics',
       component: AnalyticsView,
-      meta: { requiresAuth: true, superUserOnly: true },
+      meta: {
+        requiresAuth: true,
+        permissions: ['viewAnalytics'],
+      },
     },
     {
       path: '/qr-generator',
       name: 'qr-generator',
       component: QrGeneratorView,
-      meta: { requiresAuth: true, superUserOnly: true },
+      meta: {
+        requiresAuth: true,
+        permissions: ['createQr'],
+      },
+    },
+    {
+      path: '/users',
+      name: 'users',
+      component: UserManagementView,
+      meta: {
+        requiresAuth: true,
+        permissions: ['viewUsers', 'manageUsers'],
+      },
+    },
+    {
+      path: '/qr-codes',
+      name: 'qr-codes',
+      component: QrCodesView,
+      meta: {
+        requiresAuth: true,
+        permissions: ['viewQr'],
+      },
     },
   ],
 })
@@ -51,37 +87,35 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.checkAuth()
-  const isSuperUser = authStore.isSuperUser
 
-  // Check if route requires Super User role
-  if (to.matched.some((record) => record.meta.superUserOnly)) {
-    if (!isAuthenticated) {
-      next({ name: 'login' })
-    } else if (!isSuperUser) {
-      // Redirect to home if user doesn't have Super User role
+  // If the route requires authentication and user is not authenticated
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'login' })
+    return
+  }
+
+  // If trying to access login page but already authenticated
+  if (to.name === 'login' && isAuthenticated) {
+    next({ name: 'home' })
+    return
+  }
+
+  // For authenticated routes that require specific permissions
+  if (isAuthenticated && to.meta.requiresAuth && to.meta.permissions && !authStore.isSuperUser) {
+    const requiredPermissions = to.meta.permissions as string[]
+    const hasPermission = requiredPermissions.some((permission) =>
+      authStore.hasPermission(permission as any),
+    )
+
+    if (!hasPermission) {
+      // If user lacks permissions, redirect to home
       next({ name: 'home' })
-    } else {
-      next()
+      return
     }
   }
-  // Check if route requires authentication
-  else if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (!isAuthenticated) {
-      next({ name: 'login' })
-    } else {
-      next()
-    }
-  }
-  // Check if route is for guests only (like login)
-  else if (to.matched.some((record) => record.meta.guest)) {
-    if (isAuthenticated) {
-      next({ name: 'home' })
-    } else {
-      next()
-    }
-  } else {
-    next()
-  }
+
+  // For all other cases
+  next()
 })
 
 export default router

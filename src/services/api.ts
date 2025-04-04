@@ -6,6 +6,8 @@ import type {
   UrlAnalytics,
   QrCodeRequest,
   QrTargetType,
+  User,
+  CreateUserRequest,
 } from '@/types/api'
 
 const apiClient = axios.create({
@@ -73,4 +75,29 @@ export default {
       responseType: 'blob',
     })
   },
+
+  getAllQrCodes(search?: string): Promise<AxiosResponse<QrCode[]>> {
+    const params = search ? { search } : {}
+    return apiClient.get('/qr', { params })
+  },
+
+  // User management methods
+  getUsers(): Promise<AxiosResponse<User[]>> {
+    return apiClient.get('/users/')
+  },
+
+  createUser(userData: CreateUserRequest): Promise<AxiosResponse<User>> {
+    return apiClient.post('/users/', userData)
+  },
+
+  // Add these missing user management methods
+  updateUser(userId: string, userData: Partial<CreateUserRequest>): Promise<AxiosResponse<User>> {
+    return apiClient.put(`/users/${userId}`, userData)
+  },
+
+  deleteUser(userId: string): Promise<AxiosResponse<void>> {
+    return apiClient.delete(`/users/${userId}`)
+  },
+
+  apiClient,
 }

@@ -48,3 +48,33 @@ export interface ApiError {
 }
 
 export type QrTargetType = 'original' | 'shortened'
+
+export interface User {
+  id: string
+  username: string
+  email: string | null
+  full_name: string | null
+  roles: string[]
+  created_at: number
+  updated_at: number
+  last_login: number | null
+  is_active: boolean
+}
+
+export interface CreateUserRequest {
+  username: string
+  password: string
+  email?: string
+  full_name?: string
+  roles: string[]
+}
+
+export interface QrCode {
+  id: string
+  short_code: string
+  original_url: string
+  generated_at: number
+  target_type: QrTargetType
+  is_direct: boolean
+  svg_content: string
+}

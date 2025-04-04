@@ -7,10 +7,14 @@
       </div>
 
       <div class="nav-links">
-        <router-link to="/shorten">Shorten</router-link>
-        <router-link to="/urls">My URLs</router-link>
-        <!-- Only show these links for Super Users -->
-        <router-link v-if="isSuperUser" to="/qr-generator">Create QR</router-link>
+        <router-link v-if="canCreateUrls" to="/shorten">Shorten</router-link>
+        <router-link v-if="canViewUrls" to="/urls">My URLs</router-link>
+
+        <!-- Feature-specific menu items -->
+        <router-link v-if="canCreateQr" to="/qr-generator">Create QR</router-link>
+        <router-link v-if="canViewQr" to="/qr-codes">QR Codes</router-link>
+        <router-link v-if="canViewUsers" to="/users">User Management</router-link>
+
         <a href="#" @click.prevent="logout" class="logout-link">Logout</a>
       </div>
     </nav>
@@ -26,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 export default defineComponent({
@@ -35,6 +39,36 @@ export default defineComponent({
 
     const isAuthenticated = computed(() => authStore.isAuthenticated)
     const isSuperUser = computed(() => authStore.isSuperUser)
+    const userRoles = computed(() => authStore.userRoles)
+
+    // Permission-based computed properties
+    const canCreateUrls = computed(() => authStore.canCreateUrls)
+    const canViewUrls = computed(() => authStore.canViewUrls)
+    const canCreateQr = computed(() => authStore.canCreateQr)
+    const canViewQr = computed(() => authStore.canViewQr) // Add this line
+    const canManageQr = computed(() => authStore.canManageQr) // Add this line if needed
+    const canViewUsers = computed(() => authStore.canViewUsers)
+
+    // Add watchers to debug role-based permissions
+    watch(isAuthenticated, (newVal) => {
+      console.log('isAuthenticated changed to:', newVal)
+      if (newVal) {
+        console.log('User roles:', authStore.userRoles)
+        console.log('isSuperUser:', authStore.isSuperUser)
+        console.log('canCreateUrls:', authStore.canCreateUrls)
+        console.log('canViewUrls:', authStore.canViewUrls)
+        console.log('canCreateQr:', authStore.canCreateQr)
+        console.log('canViewUsers:', authStore.canViewUsers)
+      }
+    })
+
+    onMounted(() => {
+      if (isAuthenticated.value) {
+        console.log('App mounted, user is authenticated')
+        console.log('User roles:', authStore.userRoles)
+        console.log('isSuperUser:', authStore.isSuperUser)
+      }
+    })
 
     const logout = () => {
       authStore.logout()
@@ -43,6 +77,13 @@ export default defineComponent({
     return {
       isAuthenticated,
       isSuperUser,
+      userRoles,
+      canCreateUrls,
+      canViewUrls,
+      canCreateQr,
+      canViewQr, // Add this line
+      canManageQr, // Add this line if needed
+      canViewUsers,
       logout,
     }
   },

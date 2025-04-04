@@ -72,9 +72,14 @@ export default defineComponent({
         return
       }
 
-      const success = await authStore.login(username.value, password.value)
-      if (success) {
-        router.push('/')
+      try {
+        const success = await authStore.login(username.value, password.value)
+        if (success) {
+          // Explicitly navigate to home page after successful login
+          router.push({ name: 'home' })
+        }
+      } catch (err) {
+        console.error('Login error:', err)
       }
     }
 
