@@ -64,20 +64,6 @@
                 <button @click="() => editUser(user)" class="action-button edit-button">
                   Edit
                 </button>
-                <!-- <button
-                  v-if="user.is_active"
-                  @click="() => toggleUserStatus(user.id, false)"
-                  class="action-button deactivate-button"
-                >
-                  Deactivate
-                </button>
-                <button
-                  v-else
-                  @click="() => toggleUserStatus(user.id, true)"
-                  class="action-button activate-button"
-                >
-                  Activate
-                </button> -->
                 <button
                   v-if="user.username !== 'admin'"
                   @click="() => confirmDeleteUser(user)"
@@ -126,120 +112,6 @@
             <div class="form-group">
               <label for="fullName">Full Name (optional)</label>
               <input id="fullName" v-model="userForm.fullName" type="text" />
-            </div>
-
-            <div class="form-group">
-              <label>Roles</label>
-              <div class="roles-checkboxes">
-                <div class="role-checkbox">
-                  <input
-                    id="role-superuser"
-                    type="checkbox"
-                    value="SuperUser"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-superuser">Super User</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-systemadmin"
-                    type="checkbox"
-                    value="SystemAdmin"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-systemadmin">System Admin</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-urlcreator"
-                    type="checkbox"
-                    value="UrlCreator"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-urlcreator">URL Creator</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-urlviewer"
-                    type="checkbox"
-                    value="UrlViewer"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-urlviewer">URL Viewer</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-urlmanager"
-                    type="checkbox"
-                    value="UrlManager"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-urlmanager">URL Manager</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-qrcreator"
-                    type="checkbox"
-                    value="QrCreator"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-qrcreator">QR Creator</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-qrviewer"
-                    type="checkbox"
-                    value="QrViewer"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-qrviewer">QR Viewer</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-qrmanager"
-                    type="checkbox"
-                    value="QrManager"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-qrmanager">QR Manager</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-analyticsviewer"
-                    type="checkbox"
-                    value="AnalyticsViewer"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-analyticsviewer">Analytics Viewer</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-analyticsmanager"
-                    type="checkbox"
-                    value="AnalyticsManager"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-analyticsmanager">Analytics Manager</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-userviewer"
-                    type="checkbox"
-                    value="UserViewer"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-userviewer">User Viewer</label>
-                </div>
-                <div class="role-checkbox">
-                  <input
-                    id="role-usermanager"
-                    type="checkbox"
-                    value="UserManager"
-                    v-model="userForm.roles"
-                  />
-                  <label for="role-usermanager">User Manager</label>
-                </div>
-              </div>
             </div>
 
             <div v-if="formError" class="form-error">
@@ -325,7 +197,6 @@ export default defineComponent({
       password: '',
       email: '',
       fullName: '',
-      roles: [] as string[],
     })
 
     onMounted(async () => {
@@ -352,7 +223,6 @@ export default defineComponent({
         password: '',
         email: '',
         fullName: '',
-        roles: [],
       }
       formError.value = ''
       userToEdit.value = null
@@ -365,7 +235,6 @@ export default defineComponent({
         password: '', // We don't populate password for edit
         email: user.email || '',
         fullName: user.full_name || '',
-        roles: [...user.roles],
       }
       showEditUserModal.value = true
     }
@@ -373,11 +242,6 @@ export default defineComponent({
     const createUser = async () => {
       if (!userForm.value.username || !userForm.value.password) {
         formError.value = 'Username and password are required'
-        return
-      }
-
-      if (userForm.value.roles.length === 0) {
-        formError.value = 'Please select at least one role'
         return
       }
 
@@ -390,7 +254,6 @@ export default defineComponent({
           password: userForm.value.password,
           email: userForm.value.email || undefined,
           full_name: userForm.value.fullName || undefined,
-          roles: userForm.value.roles,
         })
         closeModals()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -404,20 +267,10 @@ export default defineComponent({
     const updateUser = async () => {
       if (!userToEdit.value) return
 
-      if (userForm.value.roles.length === 0) {
-        formError.value = 'Please select at least one role'
-        return
-      }
-
       isSubmitting.value = true
       formError.value = ''
 
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const userData: any = {
-          roles: userForm.value.roles,
-        }
-
         if (userForm.value.email) {
           userData.email = userForm.value.email
         }
@@ -457,14 +310,6 @@ export default defineComponent({
       }
     }
 
-    // const toggleUserStatus = async (userId: string, activate: boolean) => {
-    //   try {
-    //     await userStore.toggleUserStatus(userId, activate)
-    //   } catch (err) {
-    //     console.error(`Error ${activate ? 'activating' : 'deactivating'} user:`, err)
-    //   }
-    // }
-
     return {
       users,
       isLoading,
@@ -483,7 +328,6 @@ export default defineComponent({
       updateUser,
       confirmDeleteUser,
       deleteUser,
-      //toggleUserStatus,
     }
   },
 })

@@ -54,7 +54,7 @@ export interface User {
   username: string
   email: string | null
   full_name: string | null
-  roles: string[]
+
   created_at: number
   updated_at: number
   last_login: number | null
@@ -66,7 +66,6 @@ export interface CreateUserRequest {
   password: string
   email?: string
   full_name?: string
-  roles: string[]
 }
 
 export interface QrCode {

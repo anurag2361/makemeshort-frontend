@@ -18,7 +18,6 @@ const router = createRouter({
       component: UrlsView,
       meta: {
         requiresAuth: true,
-        permissions: ['viewUrl'],
       },
     },
     {
@@ -33,7 +32,6 @@ const router = createRouter({
       component: ShortenView,
       meta: {
         requiresAuth: true,
-        permissions: ['createUrl'],
       },
     },
     {
@@ -42,7 +40,6 @@ const router = createRouter({
       component: UrlsView,
       meta: {
         requiresAuth: true,
-        permissions: ['viewUrl'],
       },
     },
     {
@@ -51,7 +48,6 @@ const router = createRouter({
       component: AnalyticsView,
       meta: {
         requiresAuth: true,
-        permissions: ['viewAnalytics'],
       },
     },
     {
@@ -60,7 +56,6 @@ const router = createRouter({
       component: QrGeneratorView,
       meta: {
         requiresAuth: true,
-        permissions: ['createQr'],
       },
     },
     {
@@ -69,7 +64,6 @@ const router = createRouter({
       component: UserManagementView,
       meta: {
         requiresAuth: true,
-        permissions: ['viewUsers', 'manageUsers'],
       },
     },
     {
@@ -78,7 +72,6 @@ const router = createRouter({
       component: QrCodesView,
       meta: {
         requiresAuth: true,
-        permissions: ['viewQr'],
       },
     },
   ],
