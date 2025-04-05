@@ -8,6 +8,8 @@ export interface ShortenedUrl {
   has_original_qr: boolean
   clicks: number
   unique_clicks: number
+  user_id: string
+  owned_by_current_user: boolean
 }
 
 export interface ShortenUrlRequest {
@@ -76,4 +78,11 @@ export interface QrCode {
   target_type: QrTargetType
   is_direct: boolean
   svg_content: string
+  user_id: string
+  owned_by_current_user: boolean
+}
+
+export interface AuthResponse {
+  token: string
+  user: User
 }

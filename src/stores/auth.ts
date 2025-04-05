@@ -2,10 +2,7 @@
 import { defineStore } from 'pinia'
 import api from '@/services/api'
 import router from '@/router'
-
-interface User {
-  username: string
-}
+import type { User } from '@/types/api'
 
 interface AuthState {
   token: string | null
@@ -17,7 +14,7 @@ interface AuthState {
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     token: localStorage.getItem('token'),
-    user: null,
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
     isLoading: false,
     error: null,
   }),
@@ -50,10 +47,9 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const response = await api.login({ username, password })
+        // Update to use the new response format
         this.token = response.data.token
-        this.user = {
-          username: response.data.username,
-        }
+        this.user = response.data.user
 
         // Store token in localStorage for persistence
         localStorage.setItem('token', this.token as string)
@@ -87,7 +83,7 @@ export const useAuthStore = defineStore('auth', {
       if (this.token) {
         api.setAuthToken(this.token)
 
-        // If we have a token but no user data, try to load from localStorage first
+        // If we have a token but no user data, try to load from localStorage
         if (!this.user) {
           const storedUser = localStorage.getItem('user')
           if (storedUser) {
@@ -96,26 +92,17 @@ export const useAuthStore = defineStore('auth', {
               return true
             } catch (error) {
               console.error('Error parsing stored user data:', error)
+              // If parsing fails, clear the token
+              this.token = null
+              localStorage.removeItem('token')
+              localStorage.removeItem('user')
+              return false
             }
-          }
-
-          // If no stored user data, try to parse from token
-          try {
-            const parts = this.token.split('.')
-            if (parts.length === 3) {
-              const payload = JSON.parse(atob(parts[1]))
-              this.user = {
-                username: payload.sub, // JWT standard for subject (username)
-              }
-              // Also store the parsed user data
-              localStorage.setItem('user', JSON.stringify(this.user))
-            }
-          } catch (error) {
-            console.error('Error parsing JWT token:', error)
-            // If parsing fails, clear the token
+          } else {
+            // If no stored user data, token might be invalid
+            console.error('Token exists but no user data found')
             this.token = null
             localStorage.removeItem('token')
-            localStorage.removeItem('user')
             return false
           }
         }
@@ -123,6 +110,41 @@ export const useAuthStore = defineStore('auth', {
         return !!this.user
       }
       return false
+    },
+
+    async signup(username: string, password: string, email?: string, fullName?: string) {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const response = await api.signup({
+          username,
+          password,
+          email,
+          full_name: fullName,
+        })
+
+        // Handle successful signup the same way as login
+        this.token = response.data.token
+        this.user = response.data.user
+
+        // Store token in localStorage for persistence
+        localStorage.setItem('token', this.token as string)
+
+        // Also store user data in localStorage
+        localStorage.setItem('user', JSON.stringify(this.user))
+
+        // Set token for all future API requests
+        api.setAuthToken(this.token as string)
+
+        return true
+      } catch (err: any) {
+        this.error = err.response?.data?.error || 'Signup failed. Please try again.'
+        console.error('Signup error:', err)
+        return false
+      } finally {
+        this.isLoading = false
+      }
     },
   },
 })

@@ -22,7 +22,7 @@ export const useQrCodeStore = defineStore('qrCode', {
 
       try {
         const response = await api.getAllQrCodes(search)
-        this.qrCodes = response.data
+        this.qrCodes = response.data.filter((qr) => qr.owned_by_current_user)
         return response.data
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {

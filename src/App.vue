@@ -12,7 +12,7 @@
         <router-link to="/qr-generator">Create QR</router-link>
         <router-link to="/qr-codes">QR Codes</router-link>
         <router-link to="/analytics">Analytics</router-link>
-        <router-link to="/users">Users</router-link>
+        <!-- <router-link to="/users">Users</router-link> -->
 
         <a href="#" @click.prevent="logout" class="logout-link">Logout</a>
       </div>

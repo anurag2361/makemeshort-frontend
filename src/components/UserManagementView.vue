@@ -30,7 +30,6 @@
             <th>Username</th>
             <th>Full Name</th>
             <th>Email</th>
-            <th>Roles</th>
             <th>Status</th>
             <th>Created</th>
             <th>Last Login</th>
@@ -42,13 +41,6 @@
             <td>{{ user.username }}</td>
             <td>{{ user.full_name || 'Not set' }}</td>
             <td>{{ user.email || 'Not set' }}</td>
-            <td>
-              <div class="roles-list">
-                <span v-for="role in user.roles" :key="role" class="role-badge">
-                  {{ role }}
-                </span>
-              </div>
-            </td>
             <td>
               <span
                 class="status-badge"
@@ -169,10 +161,11 @@
   </div>
 </template>
 
+<!-- filepath: /Users/anuragsharma/Documents/makemeshort-cms/makemeshort-cms/src/components/UserManagementView.vue -->
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import type { User } from '@/types/api'
+import type { User, CreateUserRequest } from '@/types/api'
 
 export default defineComponent({
   name: 'UserManagementView',
@@ -270,15 +263,21 @@ export default defineComponent({
       isSubmitting.value = true
       formError.value = ''
 
+      const userData: Partial<CreateUserRequest> = {}
+
+      if (userForm.value.password) {
+        userData.password = userForm.value.password
+      }
+
+      if (userForm.value.email) {
+        userData.email = userForm.value.email
+      }
+
+      if (userForm.value.fullName) {
+        userData.full_name = userForm.value.fullName
+      }
+
       try {
-        if (userForm.value.email) {
-          userData.email = userForm.value.email
-        }
-
-        if (userForm.value.fullName) {
-          userData.full_name = userForm.value.fullName
-        }
-
         await userStore.updateUser(userToEdit.value.id, userData)
         closeModals()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -427,12 +426,6 @@ h1 {
   background-color: #f9f9f9;
 }
 
-.roles-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .role-badge {
   background-color: #e4f0fc;
   color: #4a90e2;
@@ -562,13 +555,6 @@ h1 {
   outline: none;
   border-color: #4a90e2;
   box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-}
-
-.roles-checkboxes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-  margin-top: 10px;
 }
 
 .role-checkbox {

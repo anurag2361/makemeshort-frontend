@@ -7,43 +7,125 @@
       </div>
 
       <div class="form-container">
-        <h2>Login</h2>
-        <p class="subtitle">Sign in to access your dashboard</p>
-
-        <form @submit.prevent="handleLogin" class="login-form">
-          <div class="form-group">
-            <label for="username">Username</label>
-            <input
-              id="username"
-              v-model="username"
-              type="text"
-              placeholder="Enter your username"
-              :disabled="isLoading"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input
-              id="password"
-              v-model="password"
-              type="password"
-              placeholder="Enter your password"
-              :disabled="isLoading"
-              required
-            />
-          </div>
-
-          <div v-if="error" class="error-message">
-            {{ error }}
-          </div>
-
-          <button type="submit" class="login-button" :disabled="isLoading">
-            <span v-if="isLoading">Logging in...</span>
-            <span v-else>Login</span>
+        <!-- Add tabs for login/signup -->
+        <div class="auth-tabs">
+          <button
+            @click="activeTab = 'login'"
+            :class="['tab-button', { active: activeTab === 'login' }]"
+          >
+            Login
           </button>
-        </form>
+          <button
+            @click="activeTab = 'signup'"
+            :class="['tab-button', { active: activeTab === 'signup' }]"
+          >
+            Sign Up
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <div v-if="activeTab === 'login'">
+          <h2>Login</h2>
+          <p class="subtitle">Sign in to access your dashboard</p>
+
+          <form @submit.prevent="handleLogin" class="login-form">
+            <div class="form-group">
+              <label for="login-username">Username</label>
+              <input
+                id="login-username"
+                v-model="loginForm.username"
+                type="text"
+                placeholder="Enter your username"
+                :disabled="isLoading"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input
+                id="login-password"
+                v-model="loginForm.password"
+                type="password"
+                placeholder="Enter your password"
+                :disabled="isLoading"
+                required
+              />
+            </div>
+
+            <div v-if="error" class="error-message">
+              {{ error }}
+            </div>
+
+            <button type="submit" class="login-button" :disabled="isLoading">
+              <span v-if="isLoading">Logging in...</span>
+              <span v-else>Login</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Signup Form -->
+        <div v-else>
+          <h2>Create Account</h2>
+          <p class="subtitle">Sign up to start using MakeMeShort</p>
+
+          <form @submit.prevent="handleSignup" class="signup-form">
+            <div class="form-group">
+              <label for="signup-username">Username</label>
+              <input
+                id="signup-username"
+                v-model="signupForm.username"
+                type="text"
+                placeholder="Choose a username"
+                :disabled="isLoading"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="signup-email">Email</label>
+              <input
+                id="signup-email"
+                v-model="signupForm.email"
+                type="email"
+                placeholder="Enter your email"
+                :disabled="isLoading"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="signup-fullname">Full Name</label>
+              <input
+                id="signup-fullname"
+                v-model="signupForm.fullName"
+                type="text"
+                placeholder="Enter your full name"
+                :disabled="isLoading"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="signup-password">Password</label>
+              <input
+                id="signup-password"
+                v-model="signupForm.password"
+                type="password"
+                placeholder="Choose a secure password"
+                :disabled="isLoading"
+                required
+              />
+            </div>
+
+            <div v-if="error" class="error-message">
+              {{ error }}
+            </div>
+
+            <button type="submit" class="signup-button" :disabled="isLoading">
+              <span v-if="isLoading">Creating Account...</span>
+              <span v-else>Sign Up</span>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -61,19 +143,30 @@ export default defineComponent({
     const router = useRouter()
     const authStore = useAuthStore()
 
-    const username = ref('')
-    const password = ref('')
+    const activeTab = ref('login')
+
+    const loginForm = ref({
+      username: '',
+      password: '',
+    })
+
+    const signupForm = ref({
+      username: '',
+      password: '',
+      email: '',
+      fullName: '',
+    })
 
     const isLoading = computed(() => authStore.isLoading)
     const error = computed(() => authStore.error)
 
     const handleLogin = async () => {
-      if (!username.value || !password.value) {
+      if (!loginForm.value.username || !loginForm.value.password) {
         return
       }
 
       try {
-        const success = await authStore.login(username.value, password.value)
+        const success = await authStore.login(loginForm.value.username, loginForm.value.password)
         if (success) {
           // Explicitly navigate to home page after successful login
           router.push({ name: 'home' })
@@ -83,12 +176,35 @@ export default defineComponent({
       }
     }
 
+    const handleSignup = async () => {
+      if (!signupForm.value.username || !signupForm.value.password) {
+        return
+      }
+
+      try {
+        const success = await authStore.signup(
+          signupForm.value.username,
+          signupForm.value.password,
+          signupForm.value.email || undefined,
+          signupForm.value.fullName || undefined,
+        )
+        if (success) {
+          // Explicitly navigate to home page after successful signup
+          router.push({ name: 'home' })
+        }
+      } catch (err) {
+        console.error('Signup error:', err)
+      }
+    }
+
     return {
-      username,
-      password,
+      activeTab,
+      loginForm,
+      signupForm,
       isLoading,
       error,
       handleLogin,
+      handleSignup,
     }
   },
 })
@@ -150,12 +266,20 @@ export default defineComponent({
   opacity: 0.9;
 }
 
+@media (min-width: 768px) {
+  .logo-section {
+    width: 40%;
+  }
+}
+
 .form-container {
   padding: 40px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  max-height: 80vh;
 }
 
 h2 {
@@ -179,6 +303,7 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 12px;
 }
 
 label {
@@ -228,5 +353,96 @@ input:focus {
 .login-button:disabled {
   background-color: #a5c7f0;
   cursor: not-allowed;
+}
+
+.auth-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-button.active {
+  color: #4a90e2;
+  border-bottom: 2px solid #4a90e2;
+}
+
+.tab-button:hover {
+  background-color: #f5f5f5;
+}
+
+/* Style for both login and signup buttons */
+.login-button,
+.signup-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-button:hover,
+.signup-button:hover {
+  background-color: #3a80d2;
+}
+
+.login-button:disabled,
+.signup-button:disabled {
+  background-color: #9dc2f3;
+  cursor: not-allowed;
+}
+
+.signup-button {
+  background-color: #4caf50;
+}
+
+.signup-button:hover {
+  background-color: #43a047;
+}
+
+.login-form,
+.signup-form {
+  min-height: 300px;
+}
+
+/* Add some bottom margin to the form to ensure enough space */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Adjust responsive design for smaller screens */
+@media (max-width: 767px) {
+  .login-container {
+    max-height: none; /* Remove max height on mobile */
+  }
+
+  .form-container {
+    max-height: none; /* No max height on mobile */
+    padding: 30px 20px; /* Smaller padding */
+  }
+
+  .login-form,
+  .signup-form {
+    min-height: 0; /* No min height on mobile */
+  }
 }
 </style>

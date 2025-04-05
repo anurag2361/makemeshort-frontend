@@ -26,7 +26,7 @@ export const useUrlStore = defineStore('url', {
 
       try {
         const response = await api.getAllUrls(search)
-        this.urls = response.data
+        this.urls = response.data.filter((url) => url.owned_by_current_user)
         console.log('Fetched URLs:', this.urls)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {

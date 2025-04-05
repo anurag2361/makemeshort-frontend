@@ -9,6 +9,7 @@ import type {
   User,
   CreateUserRequest,
   QrCode,
+  AuthResponse,
 } from '@/types/api'
 
 const apiClient = axios.create({
@@ -43,6 +44,16 @@ export default {
   login(credentials: { username: string; password: string }) {
     return apiClient.post('/auth/login', credentials)
   },
+
+  signup(userData: {
+    username: string
+    password: string
+    email?: string
+    full_name?: string
+  }): Promise<AxiosResponse<AuthResponse>> {
+    return apiClient.post('/auth/signup', userData)
+  },
+
   shortenUrl(payload: ShortenUrlRequest): Promise<AxiosResponse<ShortenUrlResponse>> {
     return apiClient.post('/shorten', payload)
   },
@@ -98,6 +109,22 @@ export default {
 
   deleteUser(userId: string): Promise<AxiosResponse<void>> {
     return apiClient.delete(`/users/${userId}`)
+  },
+
+  getUserUrls(userId: string, search?: string): Promise<AxiosResponse<ShortenedUrl[]>> {
+    const params = {
+      ...(search ? { search } : {}),
+      user_id: userId,
+    }
+    return apiClient.get('/urls', { params })
+  },
+
+  getUserQrCodes(userId: string, search?: string): Promise<AxiosResponse<QrCode[]>> {
+    const params = {
+      ...(search ? { search } : {}),
+      user_id: userId,
+    }
+    return apiClient.get('/qr', { params })
   },
 
   apiClient,

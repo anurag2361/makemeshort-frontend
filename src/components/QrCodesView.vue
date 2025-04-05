@@ -62,9 +62,7 @@
             >
               Download
             </a>
-            <button @click="confirmDelete(qrCode)" class="delete-button" v-if="canManageQr">
-              Delete
-            </button>
+            <button @click="confirmDelete(qrCode)" class="delete-button">Delete</button>
           </div>
         </div>
       </div>
@@ -99,7 +97,6 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue'
 import { useQrCodeStore } from '@/stores/qr'
-import { useAuthStore } from '@/stores/auth'
 import type { QrCode, QrTargetType } from '@/types/api'
 
 export default defineComponent({
@@ -107,12 +104,11 @@ export default defineComponent({
 
   setup() {
     const qrCodeStore = useQrCodeStore()
-    const authStore = useAuthStore()
 
     const qrCodes = computed(() => qrCodeStore.qrCodes)
     const isLoading = computed(() => qrCodeStore.isLoading)
     const error = computed(() => qrCodeStore.error)
-    const canManageQr = computed(() => authStore.canManageQr)
+    const canManageQr = computed(() => true)
 
     const showDeleteModal = ref(false)
     const isDeletingQr = ref(false)
