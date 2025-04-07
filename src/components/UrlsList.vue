@@ -88,6 +88,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted, watch } from 'vue'
 import { useUrlStore } from '@/stores/url'
+import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 
 export default defineComponent({
@@ -95,6 +96,8 @@ export default defineComponent({
 
   setup() {
     const store = useUrlStore()
+    const urlStore = useUrlStore()
+    const authStore = useAuthStore()
     const searchQuery = ref('')
     let searchTimeout: number | null = null
 
@@ -102,16 +105,29 @@ export default defineComponent({
     const isLoading = computed(() => store.isLoading)
     const error = computed(() => store.error)
 
+    // Get the current user ID from auth store
+    const userId = computed(() => authStore.user?.id)
+
     // Add watcher to log URL data when it changes
     watch(
-      () => store.urls,
+      () => urlStore.urls,
       (newUrls) => {
-        console.log('URLs from store:', newUrls[0].id)
+        if (newUrls.length > 0) {
+          console.log('URLs from store:', newUrls[0].id)
+        }
       },
     )
 
     onMounted(() => {
-      store.fetchUrls()
+      // Check if we have a user ID and fetch user-specific URLs
+      if (userId.value) {
+        console.log('Fetching URLs for user:', userId.value)
+        urlStore.fetchUserUrls(userId.value)
+      } else {
+        // Fallback to the general URL fetch if no user ID is available
+        console.log('No user ID available, fetching all URLs')
+        urlStore.fetchUrls()
+      }
     })
 
     const debouncedSearch = () => {
@@ -120,7 +136,12 @@ export default defineComponent({
       }
 
       searchTimeout = window.setTimeout(() => {
-        store.fetchUrls(searchQuery.value)
+        // Use the user-specific search if a user ID is available
+        if (userId.value) {
+          urlStore.fetchUserUrls(userId.value, searchQuery.value)
+        } else {
+          urlStore.fetchUrls(searchQuery.value)
+        }
       }, 300)
     }
 

@@ -112,19 +112,13 @@ export default {
   },
 
   getUserUrls(userId: string, search?: string): Promise<AxiosResponse<ShortenedUrl[]>> {
-    const params = {
-      ...(search ? { search } : {}),
-      user_id: userId,
-    }
-    return apiClient.get('/urls', { params })
+    const params = search ? { search } : {}
+    return apiClient.get(`/users/${userId}/urls`, { params })
   },
 
   getUserQrCodes(userId: string, search?: string): Promise<AxiosResponse<QrCode[]>> {
-    const params = {
-      ...(search ? { search } : {}),
-      user_id: userId,
-    }
-    return apiClient.get('/qr', { params })
+    const params = search ? { search } : {}
+    return apiClient.get(`/users/${userId}/qr`, { params })
   },
 
   apiClient,

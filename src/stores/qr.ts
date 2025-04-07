@@ -22,7 +22,7 @@ export const useQrCodeStore = defineStore('qrCode', {
 
       try {
         const response = await api.getAllQrCodes(search)
-        this.qrCodes = response.data.filter((qr) => qr.owned_by_current_user)
+        this.qrCodes = response.data
         return response.data
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
@@ -51,5 +51,22 @@ export const useQrCodeStore = defineStore('qrCode', {
     //     this.isLoading = false
     //   }
     // },
+    async fetchUserQrCodes(userId: string, search?: string) {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const response = await api.getUserQrCodes(userId, search)
+        this.qrCodes = response.data
+        return response.data
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        this.error = err.response?.data?.error || 'Failed to fetch user QR codes'
+        console.error('Error fetching user QR codes:', err)
+        throw err
+      } finally {
+        this.isLoading = false
+      }
+    },
   },
 })

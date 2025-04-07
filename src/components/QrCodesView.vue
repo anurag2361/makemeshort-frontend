@@ -95,8 +95,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue'
+import { defineComponent, ref, computed, onMounted, watch } from 'vue'
 import { useQrCodeStore } from '@/stores/qr'
+import { useAuthStore } from '@/stores/auth'
 import type { QrCode, QrTargetType } from '@/types/api'
 
 export default defineComponent({
@@ -104,11 +105,15 @@ export default defineComponent({
 
   setup() {
     const qrCodeStore = useQrCodeStore()
+    const authStore = useAuthStore()
 
     const qrCodes = computed(() => qrCodeStore.qrCodes)
     const isLoading = computed(() => qrCodeStore.isLoading)
     const error = computed(() => qrCodeStore.error)
     const canManageQr = computed(() => true)
+
+    // Get the current user ID from auth store
+    const userId = computed(() => authStore.user?.id)
 
     const showDeleteModal = ref(false)
     const isDeletingQr = ref(false)
@@ -117,11 +122,25 @@ export default defineComponent({
     const searchQuery = ref('')
     let searchTimeout: number | null = null
 
-    onMounted(async () => {
-      try {
-        await qrCodeStore.fetchQrCodes()
-      } catch (err) {
-        console.error('Failed to fetch QR codes:', err)
+    // Add watcher to log URL data when it changes
+    watch(
+      () => qrCodeStore.qrCodes,
+      (newUrls) => {
+        if (newUrls.length > 0) {
+          console.log('URLs from store:', newUrls[0].id)
+        }
+      },
+    )
+
+    onMounted(() => {
+      // Check if we have a user ID and fetch user-specific URLs
+      if (userId.value) {
+        console.log('Fetching URLs for user:', userId.value)
+        qrCodeStore.fetchUserQrCodes(userId.value)
+      } else {
+        // Fallback to the general URL fetch if no user ID is available
+        console.log('No user ID available, fetching all URLs')
+        urlStore.fetchQrCodes()
       }
     })
 
@@ -132,7 +151,12 @@ export default defineComponent({
       }
 
       searchTimeout = window.setTimeout(() => {
-        qrCodeStore.fetchQrCodes(searchQuery.value)
+        // Use the user-specific search if a user ID is available
+        if (userId.value) {
+          qrCodeStore.fetchUserQrCodes(userId.value, searchQuery.value)
+        } else {
+          urlStore.fetchQrCodes()
+        }
       }, 300)
     }
 

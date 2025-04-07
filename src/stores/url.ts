@@ -26,12 +26,13 @@ export const useUrlStore = defineStore('url', {
 
       try {
         const response = await api.getAllUrls(search)
-        this.urls = response.data.filter((url) => url.owned_by_current_user)
-        console.log('Fetched URLs:', this.urls)
+        this.urls = response.data
+        return response.data
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         this.error = err.response?.data?.error || 'Failed to fetch URLs'
         console.error('Error fetching URLs:', err)
+        throw err
       } finally {
         this.isLoading = false
       }
@@ -86,6 +87,24 @@ export const useUrlStore = defineStore('url', {
 
     clearCurrentUrl() {
       this.currentUrl = null
+    },
+
+    async fetchUserUrls(userId: string, search?: string) {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const response = await api.getUserUrls(userId, search)
+        this.urls = response.data
+        return response.data
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        this.error = err.response?.data?.error || 'Failed to fetch user URLs'
+        console.error('Error fetching user URLs:', err)
+        throw err
+      } finally {
+        this.isLoading = false
+      }
     },
   },
 })
