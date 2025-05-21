@@ -69,18 +69,33 @@
                 >
                   View Analytics
                 </router-link>
-                <a
-                  :href="getQrCodeUrl(url.short_code)"
-                  target="_blank"
-                  class="action-button qr-button"
-                >
+                <button @click="showQrCodePopup(url.short_code)" class="action-button qr-button">
                   QR
-                </a>
+                </button>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div v-if="qrModalVisible" class="modal-backdrop" @click.self="closeQrCodePopup">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>QR Code for {{ selectedShortCode }}</h3>
+          <button @click="closeQrCodePopup" class="close-button">&times;</button>
+        </div>
+        <div class="modal-body qr-modal-body">
+          <div v-if="qrImageLoading" class="loading">
+            <p>Loading QR Code...</p>
+          </div>
+          <div v-else-if="qrImageError" class="error-message">
+            {{ qrImageError }}
+          </div>
+          <img v-else-if="qrImageUrl" :src="qrImageUrl" alt="QR Code" class="qr-image-popup" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -108,12 +123,20 @@ export default defineComponent({
     // Get the current user ID from auth store
     const userId = computed(() => authStore.user?.id)
 
+    // State for QR Code Modal
+    const qrModalVisible = ref(false)
+    const selectedShortCode = ref<string | null>(null)
+    const qrImageUrl = ref<string | null>(null)
+    const qrImageLoading = ref(false)
+    const qrImageError = ref<string | null>(null)
+
     // Add watcher to log URL data when it changes
     watch(
       () => urlStore.urls,
       (newUrls) => {
-        if (newUrls.length > 0) {
-          console.log('URLs from store:', newUrls[0].id)
+        if (newUrls.length > 0 && newUrls[0]) {
+          // Added null check for newUrls[0]
+          console.log('URLs from store, first ID:', newUrls[0].id)
         }
       },
     )
@@ -155,8 +178,40 @@ export default defineComponent({
       return `${baseUrl}/r/${shortCode}`
     }
 
-    const getQrCodeUrl = (shortCode: string): string => {
-      return api.getQrCodeUrl(shortCode)
+    // const getQrCodeUrl = (shortCode: string): string => {
+    //   return api.getQrCodeUrl(shortCode)
+    // }
+    const showQrCodePopup = async (shortCode: string) => {
+      selectedShortCode.value = shortCode
+      qrModalVisible.value = true
+      qrImageLoading.value = true
+      qrImageError.value = null
+      if (qrImageUrl.value) {
+        URL.revokeObjectURL(qrImageUrl.value)
+        qrImageUrl.value = null
+      }
+
+      try {
+        // Use regenerateQr, assuming force=false returns existing if available
+        const response = await api.regenerateQr(shortCode, 'shortened', false)
+        const blob = response.data
+        qrImageUrl.value = URL.createObjectURL(blob)
+      } catch (err: never) {
+        console.error('Error fetching QR code:', err)
+        qrImageError.value = err.response?.data?.error || 'Failed to load QR code.'
+      } finally {
+        qrImageLoading.value = false
+      }
+    }
+
+    const closeQrCodePopup = () => {
+      qrModalVisible.value = false
+      if (qrImageUrl.value) {
+        URL.revokeObjectURL(qrImageUrl.value)
+        qrImageUrl.value = null
+      }
+      selectedShortCode.value = null
+      qrImageError.value = null
     }
 
     return {
@@ -167,7 +222,14 @@ export default defineComponent({
       debouncedSearch,
       formatDate,
       getRedirectUrl,
-      getQrCodeUrl,
+      // getQrCodeUrl, // No longer needed for the button's direct href
+      qrModalVisible,
+      selectedShortCode,
+      qrImageUrl,
+      qrImageLoading,
+      qrImageError,
+      showQrCodePopup,
+      closeQrCodePopup,
     }
   },
 })
@@ -320,5 +382,77 @@ export default defineComponent({
   .url-truncate {
     max-width: 150px;
   }
+}
+/* Styles for QR Code Modal */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px; /* Adjust as needed */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
+}
+
+.close-button:hover {
+  color: #555;
+}
+
+.modal-body {
+  padding: 20px;
+  text-align: center;
+}
+
+.qr-modal-body .loading,
+.qr-modal-body .error-message {
+  padding: 20px; /* Reset padding if inherited */
+  box-shadow: none; /* Reset box-shadow if inherited */
+  background-color: transparent; /* Reset background if inherited */
+}
+
+.qr-image-popup {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  background-color: white; /* Ensure QR is visible if it has transparency */
+  border-radius: 4px;
 }
 </style>
